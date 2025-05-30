@@ -1,0 +1,251 @@
+import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+class Task implements Serializable {
+    int id;
+    String title;
+    String description;
+    int priority;
+    String dueDate;
+    boolean isCompleted;
+
+    public Task(int id, String title, String description, int priority, String dueDate, boolean isCompleted) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.dueDate = dueDate;
+        this.isCompleted = isCompleted;
+    }
+
+    public String toString() {
+        return "ID: " + id + ", Title: " + title + ", Description: " + description +
+                ", Priority: " + priority + ", Due Date: " + dueDate +
+                ", Completed: " + (isCompleted ? "Yes" : "No");
+    }
+}
+
+class PerformTask {
+    LinkedList<Task> list = new LinkedList<>();
+    final String filePath = "tasks.txt";
+
+    // Add Task
+    public void addTask(Task task) {
+        list.add(task);
+    }
+
+    // Display Tasks
+    public void display() {
+        if (list.isEmpty()) {
+            System.out.println("No tasks found.");
+        } else {
+            for (Task t : list) {
+                System.out.println(t);
+            }
+        }
+    }
+
+    // Mark Task as Complete
+    public void markTaskComplete(int id) {
+        for (Task task : list) {
+            if (task.id == id) {
+                task.isCompleted = true;
+                System.out.println("Task marked as complete.");
+                return;
+            }
+        }
+        System.out.println("Task ID not found.");
+    }
+
+    // Delete Task
+    public void deleteTask(int id) {
+        Iterator<Task> it = list.iterator();
+        while (it.hasNext()) {
+            Task task = it.next();
+            if (task.id == id) {
+                it.remove();
+                System.out.println("Task deleted.");
+                return;
+            }
+        }
+        System.out.println("Task ID not found.");
+    }
+
+    // Update Task
+    public void updateTask(int id, Scanner input) {
+        for (Task task : list) {
+            if (task.id == id) {
+                input.nextLine(); // Clear buffer
+                System.out.print("New Title: ");
+                task.title = input.nextLine();
+                System.out.print("New Description: ");
+                task.description = input.nextLine();
+                System.out.print("New Priority: ");
+                task.priority = input.nextInt();
+                input.nextLine(); // Clear buffer
+                System.out.print("New Due Date (yyyy-MM-dd): ");
+                task.dueDate = input.nextLine();
+                System.out.print("Is Completed (true/false): ");
+                task.isCompleted = input.nextBoolean();
+                System.out.println("Task updated.");
+                return;
+            }
+        }
+        System.out.println("Task ID not found.");
+    }
+
+    // Sort by Priority (Descending)
+    public void sortByPriority() {
+        list.sort((a, b) -> Integer.compare(b.priority, a.priority));
+        System.out.println("Tasks sorted by priority.");
+    }
+
+    // Sort by Due Date
+    public void sortByDueDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        list.sort((a, b) -> {
+            LocalDate d1 = LocalDate.parse(a.dueDate, formatter);
+            LocalDate d2 = LocalDate.parse(b.dueDate, formatter);
+            return d1.compareTo(d2);
+        });
+        System.out.println("Tasks sorted by due date.");
+    }
+
+    // Search by Title
+    public void searchByTitle(String title) {
+        boolean found = false;
+        for (Task task : list) {
+            if (task.title.equalsIgnoreCase(title)) {
+                System.out.println(task);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No task found with that title.");
+        }
+    }
+
+    // Search by ID
+    public void searchById(int id) {
+        for (Task task : list) {
+            if (task.id == id) {
+                System.out.println(task);
+                return;
+            }
+        }
+        System.out.println("Task ID not found.");
+    }
+
+    // Save Tasks to File
+    public void saveToFile() {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            out.writeObject(list);
+            System.out.println("Tasks saved to file.");
+        } catch (IOException e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
+    }
+
+    // Load Tasks from File
+    public void loadFromFile() {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+            list = (LinkedList<Task>) in.readObject();
+            System.out.println("Tasks loaded from file.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("No previous tasks found.");
+        }
+    }
+}
+
+public class TO_DO_LIST {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        PerformTask manager = new PerformTask();
+        manager.loadFromFile();
+
+        int choice;
+        do {
+            System.out.println("\n===== TO-DO LIST MENU =====");
+            System.out.println("1. Add Task");
+            System.out.println("2. Display Tasks");
+            System.out.println("3. Mark Task Complete");
+            System.out.println("4. Delete Task");
+            System.out.println("5. Update Task");
+            System.out.println("6. Sort by Priority");
+            System.out.println("7. Sort by Due Date");
+            System.out.println("8. Search Task by Title");
+            System.out.println("9. Search Task by ID");
+            System.out.println("10. Save & Exit");
+            System.out.print("Choose an option: ");
+            choice = input.nextInt();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter ID: ");
+                    int id = input.nextInt();
+                    input.nextLine(); // clear buffer
+                    System.out.print("Enter Title: ");
+                    String title = input.nextLine();
+                    System.out.print("Enter Description: ");
+                    String desc = input.nextLine();
+                    System.out.print("Enter Priority (1-5): ");
+                    int priority = input.nextInt();
+                    input.nextLine(); // clear buffer
+                    System.out.print("Enter Due Date (yyyy-MM-dd): ");
+                    String date = input.nextLine();
+                    System.out.print("Is Completed (true/false): ");
+                    boolean completed = input.nextBoolean();
+                    manager.addTask(new Task(id, title, desc, priority, date, completed));
+                    break;
+
+                case 2:
+                    manager.display();
+                    break;
+
+                case 3:
+                    System.out.print("Enter Task ID to mark complete: ");
+                    manager.markTaskComplete(input.nextInt());
+                    break;
+
+                case 4:
+                    System.out.print("Enter Task ID to delete: ");
+                    manager.deleteTask(input.nextInt());
+                    break;
+
+                case 5:
+                    System.out.print("Enter Task ID to update: ");
+                    manager.updateTask(input.nextInt(), input);
+                    break;
+
+                case 6:
+                    manager.sortByPriority();
+                    break;
+
+                case 7:
+                    manager.sortByDueDate();
+                    break;
+
+                case 8:
+                    input.nextLine(); // clear buffer
+                    System.out.print("Enter Title to search: ");
+                    manager.searchByTitle(input.nextLine());
+                    break;
+
+                case 9:
+                    System.out.print("Enter ID to search: ");
+                    manager.searchById(input.nextInt());
+                    break;
+
+                case 10:
+                    manager.saveToFile();
+                    System.out.println("Goodbye!");
+                    break;
+
+                default:
+                    System.out.println("Invalid option.");
+            }
+        } while (choice != 10);
+    }
+}
