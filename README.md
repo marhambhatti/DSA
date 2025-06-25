@@ -183,5 +183,5 @@ Pull requests are welcome!
 
 ## 👥 Authors
 
-Developed by **Faizan** and Team  
+Developed by **Arham Bhatti** and Team  
 🎓 Final Year Project | Java | 2025
